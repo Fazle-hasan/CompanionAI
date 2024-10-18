@@ -1,0 +1,8 @@
+pandas
+openai
+notebook
+streamlit
+scikit-learn
+langchain
+langchain_ollama
+langchain-qdrant
