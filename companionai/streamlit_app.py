@@ -101,7 +101,7 @@ def build_context(query, search_results):
 
 # LLM generation function
 def llm_gen(query, context, model="gemma2"):
-    model = OllamaLLM(model=model, temperature=0)
+    model = OllamaLLM(model=model, temperature=0.9)
     chain = prompt | model
     history_str = "\n".join([f"Human: {h['human']}\nAI: {h['ai']}" for h in st.session_state.chat_history])
     # history_str = "\n".join([f"Human: {h['human']}\nAI: {h['ai']}"] for h in st.session_state.chat_history)
