@@ -15,7 +15,7 @@ Whether you're seeking a friendly chat, emotional support, or simply a novel AI 
 CompanionAI is an AI-powered companion designed to provide engaging, lifelike conversations tailored to offer emotional support and companionship.
 
 ### Key Use Cases:
-1. **Dynamic Conversations**: Personalizing responses to the user's needs, powered by a Retrieval-Augmented Generation (RAG) system to deliver relevant, context-aware dialogue.
+1. **Dynamic Conversations**: Powered by an agentic system, this feature personalizes responses to user needs, delivering relevant and context-aware dialogue.
 2. **Companionship for Mental Well-being**: Offering warm, emotionally supportive interactions that simulate the presence of a caring companion. It can provide playful, romantic, or intimate exchanges to alleviate loneliness, while fostering good mental health through empathetic conversations.
 3. **Emotional Reassurance**: Responding with empathy and simulating a range of emotions like insecurity, doubt, or confidence, helping users feel understood and supported.
 4. **Engagement in Personal Interests**: Making it easy to engage in conversations based on the user's mood or queries, ensuring they feel heard and valued.
