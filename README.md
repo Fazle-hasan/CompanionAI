@@ -91,7 +91,7 @@ After completing the **Preparation** steps and activating your virtual environme
 2. **Run the Application**  
    Start the Streamlit app by running the following command:
    ```bash
-   streamlit run streamlit_app.py --server.port 8501
+   streamlit run agentic_app.py --server.port 8501
    ```
 ## Using the Application
 
@@ -106,12 +106,20 @@ Here, you can chat with **CompanionAI** in real-time. On the left side of the sc
 
 ## Code
 
-The **CompanionAI** project contains two key Python files:
+The **CompanionAI** project contains three key Python files:
 
-1. [`Streamlit_app.py`](companionai/streamlit_app.py):  
+1. [`agentic_app.py`](companionai/agentic_app.py):
+   This file implements the agentic workflow that enables CompanionAI to reason, validate, and adapt dynamically using LangGraph. It defines a multi-agent graph with specialized agents:
+
+   * **Retriever Agent**: Retrieves relevant context from the vector database based on user queries.
+   * **Generator Agent**: Generates human-like, emotionally aware responses using the chat history and retrieved context.
+   * **Validator Agent**: Validates and corrects the generator’s output to ensure quality, accuracy, and emotional alignment.
+     This modular agentic system allows CompanionAI to simulate intelligent decision-making and deliver coherent, context-rich, and adaptive conversations.
+
+2. [`Streamlit_app.py`](companionai/streamlit_app.py):  
    This file handles the core functionality, including the Retrieval-Augmented Generation (RAG) system, loading the database, and the Streamlit frontend for user interaction.
 
-2. [`Create_embedding.py`](companionai/create_embedding.py):  
+3. [`Create_embedding.py`](companionai/create_embedding.py):  
    This script is used to generate the vector database. You can customize it by setting the path to your CSV file and specifying the collection name you want to use for your data. It serves as the ingestion script for creating your own database from conversational data.
 
 ## Experiments Module
