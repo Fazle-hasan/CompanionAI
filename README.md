@@ -38,6 +38,7 @@ You can find the data in [`Data/Final_data.csv`](Data/Final_data.csv).
 ## Technologies
 
 - Python 3.11
+- Langgraph
 - Langchain
 - Ollama for opensource LLM
 - Qdrant as Vector Database
@@ -75,7 +76,7 @@ To set up the **CompanionAI** project, follow these steps:
    git clone https://github.com/Fazle-hasan/CompanionAI.git
    python3 -m venv venv
    source venv/bin/activate  # For Windows, use `venv\Scripts\activate`
-   pip install -r requirements.txt
+   pip install -r requirements.txt # For Windows use requirements_win.txt
    ```
 
 ## Running the Application
