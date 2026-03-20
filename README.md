@@ -43,6 +43,7 @@ You can find the data in [`Data/Final_data.csv`](Data/Final_data.csv).
 - Ollama for opensource LLM
 - Qdrant as Vector Database
 - Streamlit for UI
+- python-telegram-bot for Telegram integration
 
 ## Preparation
 
@@ -81,20 +82,60 @@ To set up the **CompanionAI** project, follow these steps:
 
 ## Running the Application
 
-After completing the **Preparation** steps and activating your virtual environment, follow these steps to run the **CompanionAI** application:
+After completing the **Preparation** steps and activating your virtual environment, CompanionAI can be used in two ways: through a **Streamlit web UI** or as a **Telegram bot**.
+
+### Option 1 — Streamlit Web UI
 
 1. **Navigate to the Project Folder**  
-   Change your directory to the `companionai` folder:
    ```bash
    cd companionai
    ```
 
 2. **Run the Application**  
-   Start the Streamlit app by running the following command:
    ```bash
    streamlit run agentic_app.py --server.port 8501
    ```
-## Using the Application
+
+3. Open `http://localhost:8501` in your browser.
+
+### Option 2 — Telegram Bot
+
+1. **Create a Telegram Bot**  
+   - Open Telegram and search for [@BotFather](https://t.me/BotFather).
+   - Send `/newbot` and follow the prompts to create your bot.
+   - Copy the **API token** BotFather gives you.
+
+2. **Set the Token**  
+   Copy the example env file and paste your token:
+   ```bash
+   cp .env.example .env
+   # Edit .env and replace the placeholder with your real token
+   ```
+   Or export it directly:
+   ```bash
+   export TELEGRAM_BOT_TOKEN='your-token-here'
+   ```
+
+3. **Run the Bot**  
+   ```bash
+   cd companionai
+   python telegram_bot.py
+   ```
+
+4. **Chat on Telegram**  
+   Open your bot in Telegram and start chatting! Supported commands:
+
+   | Command | Description |
+   |---------|-------------|
+   | `/start` | Welcome message and instructions |
+   | `/ask <query>` | Ask CompanionAI a question |
+   | `/newchat` | Clear conversation history |
+   | `/model <mistral\|gemma2>` | Switch the LLM model |
+   | `/help` | Show usage instructions |
+
+   You can also send plain text messages without any command prefix.
+
+## Using the Streamlit Application
 
 After running Streamlit, you can access the **CompanionAI** application in your browser at `http://localhost:8501`. The interface will look similar to the image below:
 
@@ -107,20 +148,27 @@ Here, you can chat with **CompanionAI** in real-time. On the left side of the sc
 
 ## Code
 
-The **CompanionAI** project contains three key Python files:
+The **CompanionAI** project contains four key Python files:
 
 1. [`agentic_app.py`](companionai/agentic_app.py):
    This file implements the agentic workflow that enables CompanionAI to reason, validate, and adapt dynamically using LangGraph. It defines a multi-agent graph with specialized agents:
 
    * **Retriever Agent**: Retrieves relevant context from the vector database based on user queries.
    * **Generator Agent**: Generates human-like, emotionally aware responses using the chat history and retrieved context.
-   * **Validator Agent**: Validates and corrects the generator’s output to ensure quality, accuracy, and emotional alignment.
+   * **Validator Agent**: Validates and corrects the generator's output to ensure quality, accuracy, and emotional alignment.
      This modular agentic system allows CompanionAI to simulate intelligent decision-making and deliver coherent, context-rich, and adaptive conversations.
 
-2. [`Streamlit_app.py`](companionai/streamlit_app.py):  
+2. [`telegram_bot.py`](companionai/telegram_bot.py):
+   Telegram bot interface that connects the agentic RAG pipeline to Telegram. It reuses the LangGraph graph from `agentic_app.py` and adds:
+
+   * Per-user chat history tracking (maintains the last 5 exchanges per user).
+   * Commands: `/ask`, `/newchat`, `/model`, `/help`, `/start`.
+   * Direct message handling — users can type freely without a command prefix.
+
+3. [`Streamlit_app.py`](companionai/streamlit_app.py):
    This file handles the core functionality, including the Retrieval-Augmented Generation (RAG) system, loading the database, and the Streamlit frontend for user interaction.
 
-3. [`Create_embedding.py`](companionai/create_embedding.py):  
+4. [`Create_embedding.py`](companionai/create_embedding.py):
    This script is used to generate the vector database. You can customize it by setting the path to your CSV file and specifying the collection name you want to use for your data. It serves as the ingestion script for creating your own database from conversational data.
 
 ## Experiments Module
