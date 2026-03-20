@@ -14,12 +14,18 @@ df['all_txt'] = "Question: " + df['question'] + " Answer: " + df['answer']
 # Set you path for storing the embeddings
 qclient = QdrantClient(path="../Data/Emb")
 
-collectionName = "YourCollectionName"
+collectionName = "allEmb"
 
-# Creating collection for mistal 
+# Delete old collection if it exists, then create fresh
+try:
+    qclient.delete_collection(collection_name=collectionName)
+    print(f"Deleted old '{collectionName}' collection")
+except Exception:
+    pass  # Collection didn't exist yet
+
 qclient.create_collection(
        collection_name=collectionName,
-       vectors_config=VectorParams(size=4096, distance=Distance.COSINE),
+       vectors_config=VectorParams(size=384, distance=Distance.COSINE),
    )
 print(collectionName + " Collection created")
 
@@ -32,7 +38,7 @@ OLLAMA_HOST = "http://localhost:11434/"
 ollama_client = Client(OLLAMA_HOST)
 
 def get_embedding_mis(txt):
-    embeddings = ollama_client.embeddings(model='mistral', prompt=txt)
+    embeddings = ollama_client.embeddings(model='locusai/all-minilm-l6-v2', prompt=txt)
     return embeddings['embedding']
 
 shape = df.shape

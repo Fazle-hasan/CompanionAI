@@ -68,7 +68,7 @@ OLLAMA_HOST = "http://localhost:11434/"
 ollama_client = Client(OLLAMA_HOST)
 
 def get_embedding_mis(txt):
-    embeddings = ollama_client.embeddings(model='mistral', prompt=txt)
+    embeddings = ollama_client.embeddings(model='locusai/all-minilm-l6-v2', prompt=txt)
     return embeddings['embedding']
 
 def qdrant_search(query):
@@ -94,7 +94,8 @@ prompt = ChatPromptTemplate.from_template(prompt_template)
 # ------------------- LangGraph Nodes -------------------
 llms = {
     "mistral": OllamaLLM(model="mistral", temperature=0.9),
-    "gemma2": OllamaLLM(model="gemma2", temperature=0.9)
+    "gemma2": OllamaLLM(model="gemma2", temperature=0.9),
+    "gemma3": OllamaLLM(model="gemma3", temperature=0.9)
 }
 
 def retrieve_context(state: AgentState) -> AgentState:
@@ -106,7 +107,7 @@ def retrieve_context(state: AgentState) -> AgentState:
 
 def generator(state: AgentState) -> AgentState:
     history_str = "\n".join([f"Human: {m['human']}\nAI: {m['ai']}" for m in state["chat_history"]])
-    llm = llms.get(state["model"], llms["mistral"])
+    llm = llms.get(state["model"], llms["gemma3"])
     chain = prompt | llm
     res = chain.invoke({
         "question": state["question"],
@@ -158,7 +159,7 @@ def main():
     if 'chat_history' not in st.session_state:
         st.session_state.chat_history = []
 
-    model = st.sidebar.selectbox("Choose a model", ["gemma2", "mistral"])
+    model = st.sidebar.selectbox("Choose a model", ["gemma3", "gemma2", "mistral"])
     if st.sidebar.button("New Chat"):
         st.session_state.chat_history = []
 

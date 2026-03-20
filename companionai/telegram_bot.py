@@ -1,5 +1,6 @@
 import os
 import logging
+from logging.handlers import TimedRotatingFileHandler
 from dotenv import load_dotenv
 from telegram import Update
 from telegram.constants import ChatAction
@@ -15,10 +16,47 @@ from agentic_app import build_graph
 
 load_dotenv()
 
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    level=logging.INFO,
+# ------------------- Logging Setup -------------------
+LOG_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "logs")
+os.makedirs(LOG_DIR, exist_ok=True)
+
+LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+formatter = logging.Formatter(LOG_FORMAT)
+
+# Root logger
+root_logger = logging.getLogger()
+root_logger.setLevel(logging.DEBUG)
+
+# Console handler (INFO and above)
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+console_handler.setFormatter(formatter)
+root_logger.addHandler(console_handler)
+
+# Info file handler — rotates daily at midnight
+info_handler = TimedRotatingFileHandler(
+    os.path.join(LOG_DIR, "info.log"),
+    when="midnight",
+    interval=1,
+    backupCount=30,
+    encoding="utf-8",
 )
+info_handler.setLevel(logging.INFO)
+info_handler.setFormatter(formatter)
+root_logger.addHandler(info_handler)
+
+# Error file handler — rotates daily at midnight
+error_handler = TimedRotatingFileHandler(
+    os.path.join(LOG_DIR, "error.log"),
+    when="midnight",
+    interval=1,
+    backupCount=30,
+    encoding="utf-8",
+)
+error_handler.setLevel(logging.ERROR)
+error_handler.setFormatter(formatter)
+root_logger.addHandler(error_handler)
+
 logger = logging.getLogger(__name__)
 
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
@@ -31,7 +69,8 @@ HELP_TEXT = (
     "Commands:\n"
     "/ask <message> — Ask me anything\n"
     "/newchat — Start a fresh conversation\n"
-    "/model <mistral|gemma2> — Switch LLM model (default: mistral)\n"
+    "/model <mistral|gemma2|gemma3> — Switch LLM model (default: gemma3)\n"
+    "/summarize — Summarize last chat\n"
     "/help — Show this help message\n\n"
     "Or just send me a message directly and I'll respond!"
 )
@@ -59,7 +98,7 @@ async def newchat_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def model_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Switch the LLM model on /model <name>."""
-    allowed = ("mistral", "gemma2")
+    allowed = ("mistral", "gemma2", "gemma3")
     if context.args and context.args[0].lower() in allowed:
         choice = context.args[0].lower()
         context.user_data["model"] = choice
@@ -82,6 +121,31 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await _process_query(update, context, update.message.text)
 
 
+async def summarize_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle /summarize."""
+    user_id = update.effective_user.id
+    history = user_histories.get(user_id, [])
+    
+    await update.message.chat.send_action(ChatAction.TYPING)
+    
+    if not history:
+        await update.message.reply_text("No chat history to summarize.")
+        return
+        
+    history_str = "\n".join([f"Human: {m['human']}\nAI: {m['ai']}" for m in history])
+    prompt = f"Please summarize the following conversation concisely:\n\n{history_str}"
+    
+    model = context.user_data.get("model", "gemma3")
+    from ollama import Client
+    client = Client(host="http://localhost:11434/")
+    try:
+        res = client.generate(model=model, prompt=prompt)
+        await update.message.reply_text(res['response'])
+    except Exception as e:
+        logger.error(f"Error summarizing chat: {e}")
+        await update.message.reply_text("Failed to summarize chat.")
+
+
 async def _process_query(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
@@ -89,7 +153,7 @@ async def _process_query(
 ):
     """Run the agentic RAG pipeline and reply with the answer."""
     user_id = update.effective_user.id
-    model = context.user_data.get("model", "mistral")
+    model = context.user_data.get("model", "gemma2")
 
     if user_id not in user_histories:
         user_histories[user_id] = []
@@ -133,6 +197,7 @@ def main():
     app.add_handler(CommandHandler("ask", ask_command))
     app.add_handler(CommandHandler("newchat", newchat_command))
     app.add_handler(CommandHandler("model", model_command))
+    app.add_handler(CommandHandler("summarize", summarize_command))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
     logger.info("CompanionAI Telegram bot is running...")

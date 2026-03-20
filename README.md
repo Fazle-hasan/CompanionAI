@@ -40,7 +40,8 @@ You can find the data in [`Data/Final_data.csv`](Data/Final_data.csv).
 - Python 3.11
 - Langgraph
 - Langchain
-- Ollama for opensource LLM
+- Ollama for opensource LLM (Gemma3, Gemma2, Mistral)
+- locusai/all-minilm-l6-v2 for embeddings
 - Qdrant as Vector Database
 - Streamlit for UI
 - python-telegram-bot for Telegram integration
@@ -51,54 +52,54 @@ To set up the **CompanionAI** project, follow these steps:
 
 1. **Install Ollama**  
    - Download and install Ollama from their official website: [Ollama Download](https://ollama.com/download).
-   - Ensure you install Ollama version 0.1.47 or higher, as Gemma2 requires this version.
 
-3. **Verify Ollama Installation**  
+2. **Verify Ollama Installation**  
    Once installed, check if Ollama is working by running the following command in your terminal:
    ```bash
    ollama -v
    ```
 
-4. **Pull Mistral Model**  
-   Pull the **Mistral 7B** model, a highly efficient 7-billion parameter model designed for natural language understanding and generation:
+3. **Pull the Embedding Model**  
+   Pull the **all-MiniLM-L6-v2** model used for generating vector embeddings:
    ```bash
+   ollama pull locusai/all-minilm-l6-v2
+   ```
+
+4. **Pull Gemma3 Model (Default)**  
+   Pull the **Gemma3** model, the default LLM used for conversations:
+   ```bash
+   ollama pull gemma3
+   ```
+
+5. **Pull Additional Models (Optional)**  
+   You can also pull these models and switch between them at runtime:
+   ```bash
+   ollama pull gemma2
    ollama pull mistral
    ```
 
-5. **Pull Gemma2 Model**  
-   Pull the **Gemma2 9B** model, a powerful 9-billion parameter model that excels in dialogue and conversational tasks:
-   ```bash
-   ollama pull gemma2
-   ```
-
 6. **Set Up Virtual Environment**  
-   Create a virtual environment and install dependencies from the `requirements.txt` file:
+   Clone the repository and install dependencies:
    ```bash
    git clone https://github.com/Fazle-hasan/CompanionAI.git
+   cd CompanionAI
    python3 -m venv venv
    source venv/bin/activate  # For Windows, use `venv\Scripts\activate`
    pip install -r requirements.txt # For Windows use requirements_win.txt
    ```
 
-## Running the Application
-
-After completing the **Preparation** steps and activating your virtual environment, CompanionAI can be used in two ways: through a **Streamlit web UI** or as a **Telegram bot**.
-
-### Option 1 — Streamlit Web UI
-
-1. **Navigate to the Project Folder**  
+7. **Create the Vector Database**  
+   Generate the embeddings for the RAG system:
    ```bash
    cd companionai
+   python create_embedding.py
    ```
 
-2. **Run the Application**  
-   ```bash
-   streamlit run agentic_app.py --server.port 8501
-   ```
+## Running the Application
 
-3. Open `http://localhost:8501` in your browser.
+After completing the **Preparation** steps and activating your virtual environment, CompanionAI can be used in two ways: through a **Telegram bot** or as a **Streamlit web UI**.
 
-### Option 2 — Telegram Bot
+### Option 1 — Telegram Bot
 
 1. **Create a Telegram Bot**  
    - Open Telegram and search for [@BotFather](https://t.me/BotFather).
@@ -130,10 +131,25 @@ After completing the **Preparation** steps and activating your virtual environme
    | `/start` | Welcome message and instructions |
    | `/ask <query>` | Ask CompanionAI a question |
    | `/newchat` | Clear conversation history |
-   | `/model <mistral\|gemma2>` | Switch the LLM model |
+   | `/model <mistral\|gemma2\|gemma3>` | Switch the LLM model |
+   | `/summarize` | Summarize the last chat |
    | `/help` | Show usage instructions |
 
    You can also send plain text messages without any command prefix.
+
+### Option 2 — Streamlit Web UI
+
+1. **Navigate to the Project Folder**  
+   ```bash
+   cd companionai
+   ```
+
+2. **Run the Application**  
+   ```bash
+   streamlit run agentic_app.py --server.port 8501
+   ```
+
+3. Open `http://localhost:8501` in your browser.
 
 ## Using the Streamlit Application
 
@@ -144,7 +160,7 @@ After running Streamlit, you can access the **CompanionAI** application in your 
 Here, you can chat with **CompanionAI** in real-time. On the left side of the screen, you'll find the following features:
 
 - **New Chat**: Clicking this button will refresh the chat history, allowing you to start a new conversation.
-- **Model Selection**: You can choose between two models, **Mistral** and **Gemma2**, using the dropdown menu. **Gemma2** is a more advanced model, offering better conversational responses and more human-like interactions compared to **Mistral**, making it ideal for more engaging and nuanced conversations.
+- **Model Selection**: You can choose between three models, **Mistral**, **Gemma2**, and **Gemma3**, using the dropdown menu. **Gemma3** and **Gemma2** are more advanced models, offering better conversational responses and more human-like interactions compared to **Mistral**, making them ideal for more engaging and nuanced conversations.
 
 ## Code
 
@@ -162,7 +178,8 @@ The **CompanionAI** project contains four key Python files:
    Telegram bot interface that connects the agentic RAG pipeline to Telegram. It reuses the LangGraph graph from `agentic_app.py` and adds:
 
    * Per-user chat history tracking (maintains the last 5 exchanges per user).
-   * Commands: `/ask`, `/newchat`, `/model`, `/help`, `/start`.
+   * Commands: `/ask`, `/newchat`, `/model`, `/summarize`, `/help`, `/start`.
+   * Daily rotating log files (`logs/info.log` and `logs/error.log`).
    * Direct message handling — users can type freely without a command prefix.
 
 3. [`Streamlit_app.py`](companionai/streamlit_app.py):

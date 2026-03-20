@@ -75,7 +75,7 @@ ollama_client = Client(OLLAMA_HOST)
 
 # Function to get embeddings
 def get_embedding_mis(txt):
-    embeddings = ollama_client.embeddings(model='mistral', prompt=txt)
+    embeddings = ollama_client.embeddings(model='locusai/all-minilm-l6-v2', prompt=txt)
     return embeddings['embedding']
 
 # Define prompt template
@@ -112,7 +112,7 @@ def llm_gen(query, context, model="gemma2"):
     return res
 
 # RAG function
-def rag(query, model="mistral"):
+def rag(query, model="gemma3"):
     search_results = qdrant_search(query)
     context = build_context(query, search_results)
     answer = llm_gen(query, context, model)
@@ -128,7 +128,7 @@ def main():
         st.session_state.chat_history = []
 
     # Model selection
-    model = st.sidebar.selectbox("Choose a model", ["gemma2", "mistral"])
+    model = st.sidebar.selectbox("Choose a model", ["gemma3", "gemma2", "mistral"])
 
     # New chat button
     if st.sidebar.button("New Chat"):
